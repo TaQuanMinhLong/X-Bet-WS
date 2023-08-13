@@ -1,0 +1,24 @@
+{
+  "name": "ws",
+  "version": "1.0.44",
+  "scripts": {
+    "dev": "bun run --watch src/index.ts",
+    "db:gen": "drizzle-kit generate:sqlite",
+    "db:migrate": "bun src/db/index.ts",
+    "db:drop": "drizzle-kit drop"
+  },
+  "dependencies": {
+    "@elysiajs/cors": "latest",
+    "@paralleldrive/cuid2": "latest",
+    "drizzle-orm": "latest",
+    "elysia": "latest"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "latest",
+    "@typescript-eslint/parser": "latest",
+    "bun-types": "latest",
+    "drizzle-kit": "latest",
+    "eslint": "latest"
+  },
+  "module": "src/index.js"
+}
