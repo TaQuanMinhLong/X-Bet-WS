@@ -1,5 +1,5 @@
 {
-  "name": "ws",
+  "name": "x-bet-ws",
   "version": "1.0.44",
   "scripts": {
     "dev": "bun run --watch src/index.ts",
@@ -16,8 +16,12 @@
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "latest",
     "@typescript-eslint/parser": "latest",
-    "bun-types": "latest",
+    "bun-types": "canary",
     "drizzle-kit": "latest"
   },
-  "module": "src/index.js"
+  "module": "index.ts",
+  "type": "module",
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
 }
