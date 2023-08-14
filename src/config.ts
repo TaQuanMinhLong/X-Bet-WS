@@ -8,6 +8,7 @@ const ENV = z.object({
 ENV.parse(process.env);
 
 declare global {
+  var self: Worker;
   namespace NodeJS {
     interface ProcessEnv extends z.infer<typeof ENV> {}
   }
