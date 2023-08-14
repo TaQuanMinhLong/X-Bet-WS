@@ -1,6 +1,16 @@
 import { UpsertUserInput, createUser, deleteUser, updateUser } from "./db";
 import { Elysia, ws, t } from "elysia";
+import { GameMatcher } from "./core";
 import { cors } from "@elysiajs/cors";
+
+const gameMatcher = new GameMatcher({
+  onAssigned(data) {
+    console.log(`Assigned player ${data.playerId} to room ${data.roomId}`);
+  },
+  onGameStart(game) {
+    console.log(`Game started at room ${game.roomId} with players: ${game.players.join(", ")}`);
+  },
+});
 
 const app = new Elysia()
   .onRequest(({ request }) => {
@@ -37,10 +47,24 @@ const app = new Elysia()
       ws.send(`The message you sent: ${message}`);
     },
     open(ws) {
-      console.log({ ws_data: ws.data });
+      console.log(ws.data.store);
+      // ws.data.stor
     },
-    query: t.Object({}),
+    query: t.Object({
+      playerId: t.String(),
+    }),
   })
+  .post(
+    "/connect",
+    ({ body }) => {
+      const playerId = body.playerId;
+    },
+    {
+      body: t.Object({
+        playerId: t.String(),
+      }),
+    }
+  )
   .post(
     "/auth",
     async ({ body: { data, type }, set }) => {
