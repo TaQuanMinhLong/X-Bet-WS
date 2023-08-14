@@ -17,8 +17,7 @@
     "@typescript-eslint/eslint-plugin": "latest",
     "@typescript-eslint/parser": "latest",
     "bun-types": "latest",
-    "drizzle-kit": "latest",
-    "eslint": "latest"
+    "drizzle-kit": "latest"
   },
   "module": "src/index.js"
 }
