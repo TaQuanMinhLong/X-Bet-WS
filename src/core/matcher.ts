@@ -1,49 +1,70 @@
 import { MAX_PLAYER } from "./schema";
 import { createId } from "@paralleldrive/cuid2";
 
-export type CreateGameInput = { roomId: string; players: string[] };
-export type AssignedPlayerEventData = { playerId: string; roomId: string };
+export type GameStartEvent = { roomId: string; players: string[] };
+export type PlayerAssignedEvent = { playerId: string; roomId: string };
 /**
  * Array of players' id
  */
 type Room = string[];
 
 type GameMatcherOptions = {
-  onGameStart: (game: CreateGameInput) => any;
-  onAssigned: (data: AssignedPlayerEventData) => any;
+  onGameStart: (event: GameStartEvent) => any;
+  onAssigned: (event: PlayerAssignedEvent) => any;
 };
 
 export class GameMatcher {
-  private readonly roomMap: Map<string, Room>;
   private availableRoom?: string;
-  private onGameStart: (game: CreateGameInput) => any;
-  private onAssigned: (data: AssignedPlayerEventData) => any;
+  private allPlayers: Set<string>;
+  private readonly roomMap: Map<string, Room>;
+  private onGameStart: (event: GameStartEvent) => any;
+  private onAssigned: (event: PlayerAssignedEvent) => any;
   constructor({ onGameStart, onAssigned }: GameMatcherOptions) {
+    this.allPlayers = new Set<string>();
     this.roomMap = new Map<string, Room>();
     this.onGameStart = onGameStart;
     this.onAssigned = onAssigned;
   }
-  private initRoom(firstPlayer: string): void {
-    const newRoom = createId();
-    this.roomMap.set(newRoom, [firstPlayer]);
-    this.availableRoom = newRoom;
-    this.onAssigned({ playerId: firstPlayer, roomId: newRoom });
-  }
-  private assignToRoom(playerId: string, roomId: string): void {
-    const players = this.roomMap.get(roomId);
-    if (!players) throw new Error(`Room ${roomId} does not exist!`);
-    if (players.length >= MAX_PLAYER) throw new Error(`Room ${roomId} reached maximum player`);
-    players.push(playerId);
-    this.roomMap.set(roomId, players);
+  private initRoom(playerId: string) {
+    if (this.allPlayers.has(playerId))
+      throw new Error(`Player ${playerId} has already been assigned`);
+    const roomId = createId();
+    this.roomMap.set(roomId, [playerId]);
+    this.availableRoom = roomId;
+    this.allPlayers.add(playerId);
     this.onAssigned({ playerId, roomId });
-    if (players.length === MAX_PLAYER) {
-      this.availableRoom = undefined;
-      this.onGameStart({ roomId, players });
-    }
+    return roomId;
   }
+  private assignToRoom(playerId: string, roomId: string) {
+    if (this.allPlayers.has(playerId))
+      throw new Error(`Player ${playerId} has already been assigned`);
+    const room = this.roomMap.get(roomId);
+    if (!room) throw new Error(`Room ${roomId} does not exist!`);
+    if (room.length >= MAX_PLAYER) throw new Error(`Room ${roomId} reached maximum player`);
+    room.push(playerId);
+    this.allPlayers.add(playerId);
+    this.roomMap.set(roomId, room);
+    this.onAssigned({ playerId, roomId });
+    if (room.length === MAX_PLAYER) {
+      this.availableRoom = undefined;
+      this.onGameStart({ roomId, players: room });
+    }
+    return roomId;
+  }
+  /**
+   * Remove room and players of the room
+   */
   removeRoom(roomId: string) {
+    const room = this.roomMap.get(roomId);
+    if (!room) throw new Error(`Room ${roomId} does not exist!`);
+    room.forEach((id) => {
+      this.allPlayers.delete(id);
+    });
     this.roomMap.delete(roomId);
   }
+  /**
+   * Remove player from the room
+   */
   removePlayer(playerId: string, roomId: string) {
     const room = this.roomMap.get(roomId);
     if (!room) throw new Error(`Room ${roomId} does not exist!`);
@@ -51,13 +72,27 @@ export class GameMatcher {
       roomId,
       room.filter((id) => id !== playerId)
     );
+    this.allPlayers.delete(playerId);
   }
-  isAssigned(playerId: string, roomId: string): boolean {
-    const room = this.roomMap.get(roomId);
-    if (!room) return false;
-    return room.includes(playerId);
+  /**
+   * Check if the player is already in the room
+   */
+  isAssigned(playerId: string, roomId?: string): boolean {
+    if (!roomId) {
+      return this.allPlayers.has(playerId);
+    } else {
+      const room = this.roomMap.get(roomId);
+      if (!room) return false;
+      return room.includes(playerId) && this.allPlayers.has(playerId);
+    }
   }
-  assign(playerId: string): void {
-    this.availableRoom ? this.assignToRoom(playerId, this.availableRoom) : this.initRoom(playerId);
+  /**
+   * Assign a player to a room
+   * @returns roomId
+   */
+  assign(playerId: string): string {
+    return this.availableRoom
+      ? this.assignToRoom(playerId, this.availableRoom)
+      : this.initRoom(playerId);
   }
 }
