@@ -20,8 +20,9 @@ export class GameMatcher {
   private onGameStart: (event: GameStartEvent) => any;
   private onAssigned: (event: PlayerAssignedEvent) => any;
   constructor({ onGameStart, onAssigned }: GameMatcherOptions) {
-    this.allPlayers = new Set<string>();
     this.roomMap = new Map<string, Room>();
+    this.allPlayers = new Set<string>();
+    this.availableRoom = undefined;
     this.onGameStart = onGameStart;
     this.onAssigned = onAssigned;
   }

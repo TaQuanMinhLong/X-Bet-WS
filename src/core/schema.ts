@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const MAX_PLAYER = 8;
+export const MAX_PLAYER = 5;
 
 const $rsp_choice = z.object({
   type: z.literal("RSP"),
