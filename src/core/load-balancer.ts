@@ -23,12 +23,12 @@ export class LoadBalancer {
         worker.postMessage({ type: "init", workerId });
         worker.onmessage = (e) => {
           if (e.data.success) {
-            console.log("Initialized worker", workerId);
+            // console.log("Initialized worker", workerId);
             this.workerPool.set(workerId, worker);
             initalized++;
           }
-          if (initalized === threads.length) {
-            console.log("Resolved");
+          if (initalized === MAX_CPU) {
+            // console.log(`Successfully initialized ${MAX_CPU} threads`);
             resolve();
           }
         };
@@ -37,12 +37,12 @@ export class LoadBalancer {
   }
   async assign(playerId: string): Promise<void> {
     if (this.counter >= MAX_PLAYER) {
-      console.log(`Number of players reached maximum, switching to next thread`);
+      // console.log(`Number of players reached maximum, switching to next thread`);
       this.counter = 0;
       this.currentThread++;
     }
     if (this.currentThread > MAX_CPU) {
-      console.log(`Back to 1st thread`);
+      // console.log(`Back to 1st thread`);
       this.currentThread = 1;
     }
     const workerId = this.currentThread;

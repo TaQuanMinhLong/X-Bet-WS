@@ -1,18 +1,14 @@
 import { UpsertUserInput, createUser, deleteUser, updateUser } from "./db";
 import { Elysia, ws, t } from "elysia";
-import { GameMatcher } from "./core";
+import { LoadBalancer } from "./core";
 import { cors } from "@elysiajs/cors";
 
-const gameMatcher = new GameMatcher({
-  onAssigned(data) {
-    console.log(`Assigned player ${data.playerId} to room ${data.roomId}`);
-  },
-  onGameStart(game) {
-    console.log(`Game started at room ${game.roomId} with players: ${game.players.join(", ")}`);
-  },
-});
+const loadBalancer = new LoadBalancer();
 
 const app = new Elysia()
+  .onStart(async () => {
+    await loadBalancer.init();
+  })
   .onRequest(({ request }) => {
     console.log(`${request.method} - ${request.url}`);
   })
@@ -46,10 +42,7 @@ const app = new Elysia()
       console.log({ message });
       ws.send(`The message you sent: ${message}`);
     },
-    open(ws) {
-      console.log(ws.data.store);
-      // ws.data.stor
-    },
+    open(ws) {},
     query: t.Object({
       playerId: t.String(),
     }),

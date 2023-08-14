@@ -3,6 +3,7 @@
   "version": "1.0.44",
   "scripts": {
     "dev": "bun run --watch src/index.ts",
+    "_": "bun run --watch src/index.ts",
     "db:gen": "drizzle-kit generate:sqlite",
     "db:migrate": "bun src/db/index.ts",
     "db:drop": "drizzle-kit drop"
